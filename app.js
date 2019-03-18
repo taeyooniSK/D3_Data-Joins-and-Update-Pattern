@@ -27,6 +27,22 @@ var quotes = [
   }
 ];
 
+var newQuotes = [
+  {
+    quote: "Houston, we have a problem.",
+    movie: "Apollo 13",
+    year: 1995,
+    rating: "PG-13"
+  },{
+    quote: "Gentlmen, you can't fight in here! This is the war room!",
+    movie: "Dr. Strangelove or: How I learned to Stop Worrying and Love the Bomb",
+    year: 1964,
+    rating: "PG"
+  }
+];
+  
+
+
 let colors = {
   "G" : "#3cff00",
   "PG": "#f9ff00",
@@ -53,47 +69,126 @@ d3.select("#quotes")
     )
     .style("border-radius", "8px");
 
-    // Let's suppose that I want to remove 'Finding Nemo' quote from the page.
-
-    //quotes.pop(); // pop메소드를 써서 quotes 객체로 된 배열안의 finding nemo 데이터를 지운다. 하지만 page에선 계속 보임
-    // 그럼 d3를 이용해서 data를 업데이트(더이상 데이터가 없다는 것을 인식시켜서) 해줘야한다.
-
-    //d3.selectAll("li")
-    //  .data(quotes) // (데이터를 계속 추적함) 콘솔창에서 보면 지워진 데이터는 _exit property안에 들어가 있음(왜냐하면 그 li요소에 일치하는 데이터가 없기때문에 제거되어야한다고 인식하고 _exit property로 이동)
-
+   
 
     var nonRQuotes = quotes.filter( movie => {
       return movie.rating !== "R";
     })
 
-  /*
- // 1번째 해결방법
 
-    d3.selectAll("li") // nonRQoute변수에 담겨진 데이터를 li에 binding시켜주고 나머지 데이터를 지운다.(데이터와 일치하지않는 li(즉 위에 필터함수에서 R에 해당하여 필터링되지 못한 것들)) 
-      .data(nonRQuotes)
-      .exit()
-      .remove(); // 이렇게 실행하면 정확히 실행될 것 같지만 제대로 실행되지 않음. 왜냐하면 데이터가 by default로 index 순으로 요소들과 연결이 되어있기 떄문 그래서 5개 데이터 중 마지막 2개의 데이터가 지워짐
 
-    d3.selectAll("li")
+    /*
+    var list = d3.select("#quotes") // 만약 parent element를 d3.select로 선택하지 않고 코드를 짜면 html에 추가함(#quotes에 append를 하는 것이 아니라..그래서 주의해야함)
+                .style("list-style", "none") // 그래서 항상 내가 추가하고싶은 parent 요소를 선택후에 children요소들을 선택해라
+                .selectAll("li") // children 요소
+
+    var add = d3.select("#add");
+
+    add.on("click", function(){         // 여기서 주목해야할 것은 내가 selection에(list변수안에 선택된 요소) 변화를 주면 새롭게 생긴 list item에만 변화가 생김
+      quotes = quotes.concat(newQuotes);   // 그 이유는 enter() 셀렉션을 전달하기 때문
+      list
+      .data(quotes)
+      .enter() // <---
+      .append("li")
         .text( d => {
-              return `'${d.quote}' - '${d.movie}' ('${d.year}')`;
-          })
-          .style("margin", "20px")
-          .style("padding", "20px")
-          .style("font-size", d => 
-            d.quote.length < 20 ? "2em" : "1em")
-          .style("background-color", d => 
-            colors[d.rating]
-          )
-          .style("border-radius", "8px");
-   
-*/
-  
-    // 2번째 해결방법:이걸 똑바로 실행되게 하려면 data메소드의 두번째 argument로 key function(부가설명: Return value used to join elements and data)을 써줘야함
+            return `'${d.quote}' - '${d.movie}' ('${d.year}')`;
+        })
+        .style("margin", "20px")
+        .style("padding", "20px")
+        .style("font-size", d => 
+          d.quote.length < 20 ? "2em" : "1em")
+        .style("background-color", d => 
+          colors[d.rating]
+        )
+        .style("border-radius", "8px");
 
-      // d3.selectAll("li")
-      //   .data(nonRQuotes, d => {
-      //     return d.quote;           // 이렇게 하면 정상적으로 작동하는데 key function으로 nonRQuotes에서 필터링된 데이터의 quote 프로퍼티에 대한 값을 연결시켜주고
-      //   })                          // 만약 필터링되지 않았던 데이터들(나머지 데이터와 일치하지 않는 데이터들은 _exit프로퍼티로 이동함)
-      //   .exit()                  // exit메소드로 접근하여
-      //   .remove();               //그 나머지 데이터를 제거
+        add.remove();
+    });
+*/
+      /* Selection Types 
+      
+    D3에서의 모든 셀렉션에서는 3부분을 가지고 있다고 할 수 있는데
+    1. enter selection(data with no elements on the page) 
+    2. exit selection(elements with no data)
+    3. update selection( data + elements) -> elements on the page that are successfully joined to data (enter selection와 exit selection의 교집합)
+
+    D3는 이 그룹들을 별개로 다룬다.
+      
+    
+      */
+  
+
+
+     /*
+
+     var list = d3.select("#quotes") 
+     .style("list-style", "none") 
+     .selectAll("li") 
+
+      var add = d3.select("#add");
+
+     add.on("click", function(){         // 여기서 주목해야할 것은 내가 selection에(list변수안에 선택된 요소) 변화를 주면 새롭게 생긴 list item에만 변화가 생김
+      quotes = quotes.concat(newQuotes);   // 그 이유는 enter() 셀렉션을 전달하기 때문
+      list
+      .data(quotes)
+      .enter() // <---
+      .append("li")
+        .text( d => {
+            return `'${d.quote}' - '${d.movie}' ('${d.year}')`;
+        })
+        .style("margin", "20px")
+        .style("padding", "0") // 여기 패딩을 0으로 처리하면 새로운 quote에만 변화가 적용됨 왜냐하면 enter selection에 있는 node를 목표로했기때문(enter())
+        .style("font-size", d =>                 // 만약 각 enter selection, exit selection을 따로 style하고 싶다면 이게 좋은 방법이다.
+          d.quote.length < 20 ? "2em" : "1em")
+        .style("background-color", d => 
+          colors[d.rating]
+        )
+        .style("border-radius", "8px");
+
+        add.remove();
+    });
+
+*/
+
+
+/* Merging Selections : Merges selection and otherSelection together into a new selection
+  selection.merge(otherSelection)
+    General Update Pattern(merge)
+
+    1. Grab the update selection, make any changes unique to that selection, and store the selection in a variable.
+    2. Grab the exit selection and remove any unnecessary elements.    상황에 따라 내가 뭔가 지우고 싶으면 2번과정
+    3. Grab the enter selection and make any changes unqiue to that selection.   뭔가 추가하고싶으면 3번 과정을 하면됨
+    4. Merge the enter and update selections, and make any changes that you want to be shared across both selections.
+
+
+
+*/
+    var listItems = d3.select("#quotes") 
+    .style("list-style", "none") 
+    .selectAll("li") 
+
+     var add = d3.select("#add");
+
+    add.on("click", function(){         // 여기서 주목해야할 것은 내가 selection에(list변수안에 선택된 요소) 변화를 주면 새롭게 생긴 list item에만 변화가 생김
+     quotes = quotes.concat(newQuotes);   // 그 이유는 enter() 셀렉션을 전달하기 때문
+
+     listItems
+     .data(quotes)
+     .enter() // <---
+     .append("li")
+       .text( d => {
+           return `'${d.quote}' - '${d.movie}' ('${d.year}')`;
+       })
+       .style("margin", "20px")
+       .style("padding", "0") // 여기 패딩을 0으로 처리하면 새로운 quote에만 변화가 적용됨 왜냐하면 enter selection에 있는 node를 목표로했기때문(enter())
+       .style("font-size", d =>                 // 만약 각 enter selection, exit selection을 따로 style하고 싶다면 이게 좋은 방법이다.
+         d.quote.length < 20 ? "2em" : "1em")
+       .style("background-color", d => 
+         colors[d.rating]
+       )
+       .style("border-radius", "8px")
+      .merge(listItems)    // listItems를 변수에 저장한 이유가 이것 때문이다. merge메소드를 여기 씀으로써 
+       .style("color", "#5599ff");
+
+       add.remove();
+   });
